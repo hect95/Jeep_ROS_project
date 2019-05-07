@@ -1,4 +1,4 @@
-#include <ros/ros.h>|
+#include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 #define stop 80
 
 
-float factor_steer = 16.3636
+float factor_steer = 16.3636;
 
 static ros::Publisher pub;
 static std_msgs::Float32MultiArray array;
@@ -32,7 +32,7 @@ void callback_receive_yolov3(const jeep_msgs::yolov3_msg& msg){
 	//}
 			
 }
-void callback_receive_steer_angle(const jeep_msgs::yolov3_msg& msg){
+void callback_receive_steer_angle(const std_msgs::Float32& msg){
 	array.data[0] = msg.data*factor_steer;
 	pub.publish(array);	
 	}
@@ -46,7 +46,7 @@ int main ( int argc, char **argv)
 
 	pub = nh.advertise<std_msgs::Float32MultiArray>("/I2C/nxp_communication",10);
 	ros::Subscriber sub = nh.subscribe("/yolo_detections_topic",1000,callback_receive_yolov3);
-	ros::Subscriber sub = nh.subscribe("/lane_detector/steer_angle",1000,callback_receive_steer_angle);
+	ros::Subscriber sub_steer = nh.subscribe("/lane_detector/steer_angle",1000,callback_receive_steer_angle);
 
 
   	ros::spin();
