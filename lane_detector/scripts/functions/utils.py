@@ -3,18 +3,22 @@
 import numpy as np
 import cv2
 import rospy
+from math import atan2
 
 
 left_a, left_b, left_c = [],[],[]
 right_a, right_b, right_c = [],[],[]
+
+#puntos de recorte para ROI vista de pajaro (en %)
+top_left = (0.18,0.65)
+top_right = (0.8,0.65)
+bottom_left = (0, 1)
+bottom_right = (1, 1)
+
 #punto = np.float32([(0.43,0.65),(0.58,0.65),(0.1,1),(1,1)])
-punto = np.float32([(0.2,0.65),(.7,0.65),(0,1),(1,1)])
+punto = np.float32([top_left,top_right,bottom_left,bottom_right])
 
-#top_left = 0
-#top_right = 0
-#bottom_left = 0
-#bottom_right = 0
-
+angle_car = atan2((480), (320-384)) * 180/np.pi
 
     
 def pipeline(img, s_thresh=(100, 255), sx_thresh=(15, 255)):
@@ -85,7 +89,7 @@ def get_hist(img):
     hist = np.sum(img[img.shape[0]//2:,:], axis=0)
     return hist
     
-def sliding_window(img, nwindows=20, margin=30, minpix = 0.1, draw_windows=True):
+def sliding_window(img, nwindows=15, margin=30, minpix = 0.1, draw_windows=True):
     global left_a, left_b, left_c,right_a, right_b, right_c 
     left_fit_= np.empty(3)
     right_fit_ = np.empty(3)
@@ -94,7 +98,6 @@ def sliding_window(img, nwindows=20, margin=30, minpix = 0.1, draw_windows=True)
     histogram = get_hist(img)
     # find peaks of left and right halves
     midpoint = int(histogram.shape[0]/2)
-    midpoint=midpoint-150
     leftx_base = np.argmax(histogram[:midpoint])
     rightx_base = np.argmax(histogram[midpoint:]) + midpoint
     
@@ -214,9 +217,9 @@ def get_curve(img, leftx, rightx):
     lane_center_position = (r_fit_x_int + l_fit_x_int) /2
     center = (car_pos - lane_center_position) * xm_per_pix / 10
     # Now our radius of curvature is in meters
-    return (left_curverad, right_curverad, center)
+    return (left_curverad, right_curverad)
 
-def draw_lanes(img, left_fit, right_fit):
+def draw_lanes(img, left_fit, right_fit, angle_car = angle_car):
     ploty = np.linspace(0, img.shape[0]-1, img.shape[0])
     color_img = np.zeros_like(img)
     
@@ -224,7 +227,40 @@ def draw_lanes(img, left_fit, right_fit):
     right = np.array([np.flipud(np.transpose(np.vstack([right_fit, ploty])))])
     points = np.hstack((left, right))
     
-    cv2.fillPoly(color_img, np.int_(points), (0,200,100))
+    #cv2.line(color_img, (int(left[0][0][0]), int(left[0][0][1])), (int(left[0][-1][0]), int(left[0][-1][1])), (255, 0, 0), 9)
+    #cv2.line(color_img, (int(right[0][0][0]), int(right[0][0][1])), (int(right[0][-1][0]), int(right[0][-1][1])), (0,255, 0), 9)
+    cv2.fillPoly(color_img, np.int_(points), (255,200,0))
+    
+    x1 = int( ( right[0][-1][0] + left[0][0][0] ) / 2 )
+    y1 = int( ( right[0][-1][1] + left[0][0][1] ) / 2 )
+    x2 = int( ( right[0][0][0] + left[0][-1][0] ) / 2 )
+    y2 = int( ( right[0][0][1] + left[0][-1][1] ) / 2 )
+    
+    angle_lane = atan2((y2-y1), (x2-x1)) * 180/np.pi
+    
+    #print("angulo lane", angle_lane)
+    #print("angulo car", angle_car)
+    #print("desviacion", angle_lane - angle_car)
+    steer_angle = angle_lane -angle_car
+    
+    #linea central de carril
+    cv2.line(color_img, (x1, y1), (x2, y2), (0, 0, 255), 8)
+    
+    #ajuste de parametros dependiendo roi
+    cv2.line(color_img, (384, 0), (320, 480), (255, 0, 255), 8)
+    
+    cv2.imshow("poly", color_img)
     inv_perspective = inv_perspective_warp(color_img, dst_size=(img.shape[1], img.shape[0]))
-    inv_perspective = cv2.addWeighted(img, 1, inv_perspective, 0.3, 0)
-    return inv_perspective
+    inv_perspective = cv2.addWeighted(img, 1, inv_perspective, .7, 0)
+    #cv2.line(inv_perspective, (img.shape[1]/2, 0), (img.shape[1]/2, 360), (0, 255, 0), 5)
+    return inv_perspective, steer_angle
+
+def image_roi(img, roi_pts):
+
+	img_copy = img.copy()
+	mask = np.zeros(img_copy.shape[:2], np.uint8)
+	cv2.drawContours(mask, [roi_pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
+	roi=cv2.bitwise_and(img_copy, img_copy, mask=mask)
+
+	return roi
+    

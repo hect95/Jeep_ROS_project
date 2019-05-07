@@ -79,7 +79,6 @@ def image_callback(msg):
 	warped_image_pub.publish(warped_msg)
 	sliding_window_pub.publish(sliding_window_msg)
 
-     
  
 if __name__ == '__main__':
 

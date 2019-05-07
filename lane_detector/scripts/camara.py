@@ -24,7 +24,7 @@ avgValue=[]
 #ROI para recortes
 pts= np.array([[100, 320], [240, 220], [420, 220], [560, 320]])
 pts= np.array([[0, 0], [0, 720], [1280, 720], [1280, 0]])
-puntos= np.array([[0, 0], [0, 720], [1280, 720], [1280, 0]])#sin recorte
+puntos= np.array([[0, 0], [0, 360], [640, 360], [640, 0]])#sin recorte
 
 #rango de valores de rojo en HSV
 rojo_bajos1 = np.array([0, 50, 50])
@@ -43,20 +43,24 @@ camara = "carriles7.mp4"
 output_image_pub = rospy.Publisher('/lane_detector/out_image', Image, queue_size=2)
 
 def image2_callback (msg):
-	frame = CvBridge().imgmsg_to_cv2(msg, "bgr8")
-	
+
 	start_time = time.time()
-	
+
+	frame = CvBridge().imgmsg_to_cv2(msg, "bgr8")
+	"""
 	max_right_line = None
 	max_left_line = None
 	maxsizeL=0
 	maxsizeR=0
 	X=0
+	"""
+	theta_sum = 0
 	
+	"""
     #copia de frame 
 	recorte=frame.copy()
 	mask = np.zeros(recorte.shape[:2], np.uint8)
-
+	
 	#suavizado de imagen para evitar ruido
 	rect_image=cv2.GaussianBlur(recorte,(11, 11), 0)
 	
@@ -67,7 +71,7 @@ def image2_callback (msg):
 
 	#detector de bordes
 	edges= cv2.Canny(rect_warped, 1 , 50, apertureSize=3)
-
+	cv2.imshow("edges Canny", edges)
 	#recorte de zona de interes
 	dst = image_roi(edges, puntos)
 	roi_rojo = image_roi(frame, puntos)
@@ -78,7 +82,9 @@ def image2_callback (msg):
 	hsv = cv2.cvtColor(roi_rojo, cv2.COLOR_BGR2HSV)
 	
 	hsv_warped = perspective_warp(hsv, dst_size=(hsv.shape[1], hsv.shape[0]))
-	cv2.imshow("hsv_warped", hsv_warped)
+	
+	#cv2.imshow("hsv_warped", hsv_warped)
+	
 	#definir kernel para operaciones morfologicas
 	kernel_m = np.ones((1,1),np.uint8)
 	
@@ -99,28 +105,42 @@ def image2_callback (msg):
 	#or mascaras de rojos
 	rojos = cv2.add(mask1, mask2)
 	
-	#or mascaras de rojos
+	#or mascaras de amarillos
 	amarillos = cv2.add(mask5, mask6)
+	
 	amarillos = cv2.morphologyEx(amarillos, cv2.MORPH_CLOSE, kernel_r)
 	amarillos = cv2.dilate(amarillos, kernel_r, iterations = 3)
 	amarillos = cv2.bitwise_not(amarillos)
 	
 	final = cv2.bitwise_and(rojos, amarillos)
+	"""
 	
-	#final = cv2.erode(final, kernel_r, iterations = 1)
+	sobel = pipeline(frame)
 	
-	#blured=cv2.medianBlur(frame, 7)
+	warped = perspective_warp(sobel, dst_size=(frame.shape[1], frame.shape[0]))
+	"""
+	hough_lines = cv2.HoughLines(warped,1,np.pi/180,100)
+	if hough_lines is not None:
+		for lines in hough_lines:
+			for rho, theta in lines:
+				angulo = int(theta*180/np.pi)
+				if angulo>90 :
+					angulo = 90-(angulo%90)
+				theta_sum += angulo
+	avg_angles = theta_sum/len(hough_lines)
+	print("acumulado de grados", avg_angles)
+	rows,cols = warped.shape
+	M = cv2.getRotationMatrix2D((cols/2,rows/2),-avg_angles,1)
+	rotated_warped = cv2.warpAffine(warped,M,(cols,rows))
+	"""
 	
-	#sobel = pipeline(blured)
-	
-	#roi_sobel = image_roi(final, pts)
-	
-	warped = perspective_warp(final, dst_size=(frame.shape[1], frame.shape[0]))
-	out_img, curves, lanes, ploty = sliding_window(warped, margin=int(frame.shape[1]*.045))
-	curverad=get_curve(frame, curves[0],curves[1])
+	out_img, curves, lanes, ploty = sliding_window(warped, margin=25)
+	#curverad=get_curve(frame, curves[0],curves[1])
 	img_ = draw_lanes(frame, curves[0], curves[1])
-
-	lines = cv2.HoughLinesP(final,1,np.pi/180,50, maxLineGap=10)
+	
+	height, width = frame.shape[:2]
+	"""
+	lines = cv2.HoughLinesP(final,1,np.pi/180,50, maxLineGap=20)
 	
 	height, width = frame.shape[:2]
 	if lines is not None:
@@ -151,43 +171,25 @@ def image2_callback (msg):
 	if X is not None and X is not 0 :
 		cv2.line(frame, (X, height-100), (X, height-100), (0, 255, 255), 8)
 	height, width = frame.shape[:2]
-	cv2.line(recorte, (width/2, height-100),(width/2, height-100), (0, 0, 255),8)
 	
+	"""
+	#midpoint
+	cv2.line(frame, (width/2, height-100),(width/2, height-100), (0, 0, 255),8)
 	
 	#numpy_vertical_1 = np.vstack((rojos, amarillos))
 	#umpy_vertical_2 = np.hstack((frame, final))
 
 
 	numpy_horizontal_concat = np.concatenate((out_img, frame, img_), axis = 1)
+	#filtros_colores = np.concatenate((rojos, amarillos, final), axis = 1)
 
 	cv2.imshow("Filtros", numpy_horizontal_concat)
-	#cv2.imshow("Resultados", frame)
-	#cv2.imshow("Result", frame)
-	#cv2.imshow("rojos", rojos)
-	#cv2.imshow("amarillos", amarillos)
-	cv2.imshow("fdsaj", final)
-	cv2.imshow("dst", dst)
-	
-	#cv2.imshow("out", out_img)
-	#cv2.imshow("hola",dst)
-	#cv2.imshow("image", img_)
+	#cv2.imshow("filtros colores", filtros_colores)
 	
 	print("-----%s segundo de ejecuccion    ----" % (time.time()-start_time))	
 	
 	cv2.waitKey(1)
-	
 
-
-def image_roi(img, roi_pts):
-	
-	img_copy = img.copy()
-	mask = np.zeros(img_copy.shape[:2], np.uint8)
-	cv2.drawContours(mask, [roi_pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
-	roi=cv2.bitwise_and(img_copy, img_copy, mask=mask)
-	
-	return roi
-
-	
 if __name__ == '__main__':
 
 	rospy.init_node('lane_testing', anonymous=True)

@@ -1,1 +1,2 @@
-subscriber_topic: /videofile/image_raw
+subscriber_topic_video: /videofile/image_raw
+subscriber_tropic_steer: /lane_detector/steer_angle

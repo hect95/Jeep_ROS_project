@@ -17,7 +17,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
-	<arg name="svo_file"              default="/home/nvidia/Documents/ZED/VGA_3.svo" /> <!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->	
+	<arg name="svo_file"              default="/home/nvidia/Documents/ZED/VGA_3.svo" /> <!-- <arg name="svo_file" default="path/to/svo/file.svo"> /home/nvidia/Documents/ZED/VGA_6.svo-->	
     <!-- Odometry coordinate frame -->
     <arg name="odometry_frame"        default="odom" />
 
