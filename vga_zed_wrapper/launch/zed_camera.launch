@@ -18,7 +18,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <launch>
     <arg name="camera_model"          default="0" /> <!-- 0=ZED, 1=ZEDM-->
-    <arg name="svo_file"              default="/home/nvidia/Documents/ZED/VGA_3.svo" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
+    <arg name="svo_file"              default="/home/nvidia/Documents/ZED/VGA_3.svo" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> /home/nvidia/Documents/ZED/VGA_6.svo -->
     <arg name="zed_id"                default="0" />
     <!-- If a ZED SN is given, zed_id is ignored and the wrapper will specifically look for the ZED with the corresponding serial number -->
     <arg name="serial_number"                default="0" /> 
@@ -58,7 +58,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="quality"               value="1" />
         <!-- FILL MODE -->
         <param name="sensing_mode"          value="1" />
-        <param name="frame_rate"            value="20" />
+        <param name="frame_rate"            value="25" />
         <param name="odometry_db"           value="" />
         <param name="openni_depth_mode"     value="0" />
         <param name="gpu_id"                value="$(arg gpu_id)" />
