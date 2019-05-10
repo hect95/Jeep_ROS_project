@@ -58,7 +58,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <param name="quality"               value="1" />
         <!-- FILL MODE -->
         <param name="sensing_mode"          value="1" />
-        <param name="frame_rate"            value="25" />
+        <param name="frame_rate"            value="30" />
         <param name="odometry_db"           value="" />
         <param name="openni_depth_mode"     value="0" />
         <param name="gpu_id"                value="$(arg gpu_id)" />

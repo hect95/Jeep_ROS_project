@@ -73,7 +73,7 @@ def image2_callback (msg):
 
 	#detector de bordes
 	edges= cv2.Canny(rect_warped, 1 , 50, apertureSize=3)
-	cv2.imshow("edges Canny", edges)
+	#cv2.imshow("edges Canny", edges)
 	#recorte de zona de interes
 	dst = image_roi(edges, puntos)
 	roi_rojo = image_roi(frame, puntos)

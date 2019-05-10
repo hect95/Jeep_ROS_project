@@ -10,10 +10,15 @@ left_a, left_b, left_c = [],[],[]
 right_a, right_b, right_c = [],[],[]
 
 #puntos de recorte para ROI vista de pajaro (en %)
-top_left = (0.18,0.65)
-top_right = (0.8,0.65)
-bottom_left = (0, 1)
+top_left = (0.43,0.65)
+top_right = (0.58,0.65)
+bottom_left = (0.1, 1)
 bottom_right = (1, 1)
+
+#top_left = (0.18,0.7)
+#top_right = (0.8,0.7)
+#bottom_left = (0, 1)
+#bottom_right = (1, 1)
 
 #punto = np.float32([(0.43,0.65),(0.58,0.65),(0.1,1),(1,1)])
 punto = np.float32([top_left,top_right,bottom_left,bottom_right])

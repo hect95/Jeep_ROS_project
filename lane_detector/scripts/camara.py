@@ -136,7 +136,7 @@ def image2_callback (msg):
 	
 	out_img, curves, lanes, ploty = sliding_window(warped, margin=25)
 	#curverad=get_curve(frame, curves[0],curves[1])
-	img_ = draw_lanes(frame, curves[0], curves[1])
+	img_, steering = draw_lanes(frame, curves[0], curves[1])
 	
 	height, width = frame.shape[:2]
 	"""
@@ -195,7 +195,7 @@ if __name__ == '__main__':
 	rospy.init_node('lane_testing', anonymous=True)
 
 	
-	rospy.Subscriber(rospy.get_param("~subscriber_topic_2"), Image, image2_callback,queue_size=2,buff_size=52428800)	
+	rospy.Subscriber(rospy.get_param("~subscriber_topic_video"), Image, image2_callback,queue_size=2,buff_size=52428800)	
 
 	
 	try:

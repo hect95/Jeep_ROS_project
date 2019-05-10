@@ -5,7 +5,7 @@
     <include file="$(find lane_detector)/launch/hardware/zed.launch"/>
 
     <!-- Launch ROS line_detector Node -->
-    <node pkg="lane_detector" type="camara.py"
+    <node pkg="lane_detector" type="camara_pista.py"
           name="lane_testing" output="screen"
           clear_params="true" required="true">
         <rosparam command="load" file="$(find lane_detector)/config/zed_default.yaml"/>
