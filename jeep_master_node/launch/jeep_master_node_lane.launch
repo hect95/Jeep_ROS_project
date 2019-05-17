@@ -11,7 +11,7 @@
     <include file="$(find navigation_control)/launch/navigation_control.launch"/>
 
     <!-- INITIALIZE LIDARLITE Node -->
-    <include file="$(find lidarlite_node)/launch/lidarlite_node.launch"/>
+    <!--<include file="$(find lidarlite_node)/launch/lidarlite_node.launch"/>-->
 
     <!-- INITIALIZE NXP_COMMUNICATION -->
     <include file="$(find nxp_communication)/launch/nxp_communication.launch"/>

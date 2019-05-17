@@ -10,37 +10,60 @@
 #include <jeep_msgs/yolov3_msg.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <vector>
-
+#include <array>
+#include <cstdlib>
 #define stop 80
 
+//filtro de mediana
 
-float factor_steer = 16.3636;
+
 
 static ros::Publisher pub;
 static std_msgs::Float32MultiArray array;
-	
+static std::array<float,8> data;
+
+static float median_filter(){
+	std::array<float,8> data_copy = data;
+	std::sort(data_copy.begin(),data_copy.end());
+	return ((data_copy.at(3)+data_copy.at(4))*0.5);
+}
+
+void push_n_shift_data(float new_data){
+	for(int i = 6; i >= 0; i--){
+		data.at(i+1) = data.at(i);
+	}
+	data.at(0) = new_data;
+}
+
 void callback_receive_yolov3(const jeep_msgs::yolov3_msg& msg){
 	
 	//array.data.clear();		
 	//if (msg.name == "person"){			
 		//array.data.push_back()
 		//array.data[0] = 0;
-		array.data[1] = 100*exp(-(pow(0.25*msg.depth,2))); //y = 80*e^(-(0.1*x)^2) GAUSSIAN FUNCTION
+		push_n_shift_data(msg.depth);
+		array.data[1] = 43*exp(-(pow(0.12*median_filter(),2))); //y = 80*e^(-(0.1*x)^2) GAUSSIAN FUNCTION
 		array.data[2] = array.data[1];
-		array.data[0] = array.data[1];
 		pub.publish(array);
 	//}
 			
 }
 void callback_receive_steer_angle(const std_msgs::Float32& msg){
-	array.data[0] = msg.data*factor_steer;
-	pub.publish(array);	
+	if (abs(msg.data) < 1){
+		array.data[0] = 0;
+		
+	}else {
+		
+		array.data[0] = msg.data;
+		}
+	
+	pub.publish(array);
 	}
 
 
 int main ( int argc, char **argv)
 {
-	array.data = std::vector<float>(3,0);
+		array.data = std::vector<float>(3,0);
 	ros::init(argc, argv, "navigation_control_node");
 	ros::NodeHandle nh;
 

@@ -1,7 +1,7 @@
 import numpy as np 
 import cv2
 
-lower_b = np.array([0, 50, 50])
+lower_b = np.array([0, 100, 50])
 upper_b = np.array([360, 255, 255])
 s_gradient = np.ones((500,1), dtype=np.uint8)*np.linspace(lower_b[1], upper_b[1], 500, dtype=np.uint8)
 v_gradient = np.rot90(np.ones((500,1), dtype=np.uint8)*np.linspace(lower_b[1], upper_b[1], 500, dtype=np.uint8))
