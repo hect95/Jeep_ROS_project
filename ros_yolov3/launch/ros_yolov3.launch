@@ -1,6 +1,6 @@
 <launch>
 
-    <!-- Launch ROS line_detector Node -->
+    <!-- Launch ROS yoloV3 node -->
     <node pkg="ros_yolov3" type="ros_yolov3"
           name="ros_yolov3" output="screen"
           clear_params="true" required="true">
