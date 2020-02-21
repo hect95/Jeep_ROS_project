@@ -9,11 +9,11 @@ This project was implemented and tested on NVIDIA JetsonTX2 running Ubuntu 16.04
 The development of the MCU (NXP S32k148) sofware layer could be found on [Farid Izar] repository.
 
 ## YOLOV3 and ZED camera
-We implement the well-known YOLOV3 algorithm in order to recognize objects as well as its distance with a ZED camera from StereoLabs.
+We implement the well-known YOLOV3 algorithm to recognize objects as well as its distances with a ZED camera from StereoLabs.
 - [YoloV3] repository
 - [Zed Ros Wrapper] 
 
-######  Author(s): Hector Cruz (Main developer), Ander Plascencia (line_detector node), [Farid Izar] (Low-level Control) 
+######  Author(s): Hector Cruz (Main developer), Ander Plascencia (lane_detector node), [Farid Izar] (Low-level Control) 
 
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
