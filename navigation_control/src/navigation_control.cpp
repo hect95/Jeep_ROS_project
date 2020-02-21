@@ -14,9 +14,6 @@
 #include <cstdlib>
 #define stop 80
 
-//filtro de mediana
-
-
 
 static ros::Publisher pub;
 static std_msgs::Float32MultiArray array;
@@ -35,17 +32,13 @@ void push_n_shift_data(float new_data){
 	data.at(0) = new_data;
 }
 
-void callback_receive_yolov3(const jeep_msgs::yolov3_msg& msg){
-	
-	//array.data.clear();		
-	//if (msg.name == "person"){			
-		//array.data.push_back()
-		//array.data[0] = 0;
-		push_n_shift_data(msg.depth);
-		array.data[1] = 43*exp(-(pow(0.12*median_filter(),2))); //y = 80*e^(-(0.1*x)^2) GAUSSIAN FUNCTION
-		array.data[2] = array.data[1];
-		pub.publish(array);
-	//}
+void callback_receive_yolov3(const jeep_msgs::yolov3_msg& msg){	
+
+	push_n_shift_data(msg.depth);
+	array.data[1] = 43*exp(-(pow(0.12*median_filter(),2))); //y = 80*e^(-(0.1*x)^2) GAUSSIAN FUNCTION
+	array.data[2] = array.data[1];
+	pub.publish(array);
+
 			
 }
 void callback_receive_steer_angle(const std_msgs::Float32& msg){
@@ -63,18 +56,14 @@ void callback_receive_steer_angle(const std_msgs::Float32& msg){
 
 int main ( int argc, char **argv)
 {
-		array.data = std::vector<float>(3,0);
+	array.data = std::vector<float>(3,0);
 	ros::init(argc, argv, "navigation_control_node");
 	ros::NodeHandle nh;
 
 	pub = nh.advertise<std_msgs::Float32MultiArray>("/I2C/nxp_communication",10);
 	ros::Subscriber sub = nh.subscribe("/yolo_detections_topic",1000,callback_receive_yolov3);
 	ros::Subscriber sub_steer = nh.subscribe("/lane_detector/steer_angle",1000,callback_receive_steer_angle);
-
-
   	ros::spin();
-	
-
 
 }
 

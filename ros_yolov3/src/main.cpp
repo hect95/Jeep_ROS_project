@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -8,30 +9,23 @@
 #include <pthread.h>
 #include <sched.h>
 #include <atomic>
-#include <mutex>              // std::mutex, std::unique_lock
-#include <condition_variable> // std::condition_variable
+#include <mutex>              
+#include <condition_variable> 
 #include <unistd.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <jeep_msgs/yolov3_msg.h>
 
-
-// This is a modified version of https://github.com/AlexeyAB/darknet/blob/master/src/yolo_console_dll.cpp
-// Basically simplified and using the ZED SDK
-
-#define OPENCV
-#define GPU
-
-#include <sl_zed/Camera.hpp>
-
+#include <sl_zed/Camera.hpp>    //ZED SDK form StereoLabs
 #include "yolo_v2_class.hpp"    // https://github.com/AlexeyAB/darknet/blob/master/src/yolo_v2_class.hpp
 #include <opencv2/opencv.hpp>
 
 
+#define OPENCV
+#define GPU
 
+// This is a modified version of https://github.com/AlexeyAB/darknet/blob/master/src/yolo_console_dll.cpp using ZED SDK
 
-
-//ros::Publisher
 typedef struct threadrec_t{
 		int available;
 		pthread_t thread;
@@ -39,7 +33,7 @@ typedef struct threadrec_t{
 		struct sched_param param;
 } threadrec_t;
 
-//thread priority
+
 class thread
 {  private:
 	pthread_attr_t 	attributes_;
@@ -130,7 +124,6 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t_3d> result_vec, std::vector<
         cv::Scalar color = obj_id_to_color(i.bbox.obj_id);
         cv::rectangle(mat_img, cv::Rect(i.bbox.x, i.bbox.y, i.bbox.w, i.bbox.h), color, 2);
         if (obj_names.size() > i.bbox.obj_id /*&& (obj_names[i.bbox.obj_id] == "person")*/ ) {
-	    //cv::rectangle(mat_img, cv::Rect(i.bbox.x, i.bbox.y, i.bbox.w, i.bbox.h), color, 2); /* Changed*/
 
             std::string obj_name = obj_names[i.bbox.obj_id];
             std::stringstream stream, probability;
@@ -149,6 +142,7 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t_3d> result_vec, std::vector<
     }
 }
 
+/* ROS Publisher function*/
 void publish_with_ROS(std::vector<bbox_t_3d> result_vec, std::vector<std::string> obj_names, ros::Publisher &pub){
 	jeep_msgs::yolov3_msg msg;
 	msg.name  = "none";
@@ -276,20 +270,13 @@ int main(int argc, char *argv[]) {
     ros::NodeHandle nh;
 	ros::Publisher pub_main = nh.advertise<jeep_msgs::yolov3_msg>("/yolo_detections_topic",10);
 	
-	
-	
 	ROS_INFO("ZED YOLOV3 NODE");
 	std::string names_file = "/home/nvidia/libdarknet/data/coco.names";
    	std::string weights_file = "/home/nvidia/libdarknet/yolov3-tiny.weights";
  	std::string cfg_file = "/home/nvidia/libdarknet/cfg/yolov3-tiny.cfg";
-   	//std::string weights_file = "yolov3.weights";
- 	//std::string cfg_file = "yolov3.cfg";
    	std::string filename;
-	//ros::Rate rate (10);
 
-
-
-    if (argc > 3) { //voc.names yolo-voc.cfg yolo-voc.weights svo_file.svo
+    if (argc > 3) { 
         names_file = argv[1];
         cfg_file = argv[2];
         weights_file = argv[3];
@@ -315,10 +302,8 @@ int main(int argc, char *argv[]) {
     slMat2cvMat(left).copyTo(cur_frame);
     exit_flag = false;
     new_data = false;
-
-    //std::thread detect_thread(detectorThread, cfg_file, weights_file, thresh);
     
-    //create thread as c code---------------------------------------------------
+    //create thread as c code
     int policy;
     threadrec_t detect_thread = {1};
     pthread_attr_init(&detect_thread.attributes);
@@ -334,9 +319,7 @@ int main(int argc, char *argv[]) {
 			detect_thread.available = 0;
 			if(pthread_create(&detect_thread.thread, &detect_thread.attributes, detectorThread_in_c, (void*)&args)) std::cerr << "Thread creation failed\n";
 	}
-	//--------------------------------------------------------------------------	
     
-
     while (!exit_flag) {
 
         if (zed.grab() == sl::SUCCESS) {
@@ -361,10 +344,8 @@ int main(int argc, char *argv[]) {
         if (key == 'p') while (true) if (cv::waitKey(100) == 'p') break;
         if (key == 27 || key == 'q' || !(ros::ok())) exit_flag = true;
     }
-    //join as c code ---------------------------------------------------------
+   
 	pthread_join(detect_thread.thread , 0);
-	//------------------------------------------------------------------------
-    //detect_thread.join();
     zed.close();
     return 0;
 }
